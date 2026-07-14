@@ -4,21 +4,16 @@ using OptimizedOS.Converters;
 
 namespace OptimizedOS.Services;
 
-/// <summary>
-/// Executes optimization steps based on their type (reg, powershell, cmd, exe).
-/// </summary>
 public class ExecutionService
 {
     private readonly LogService _log;
+    private const int DefaultTimeoutMinutes = 5;
 
     public ExecutionService(LogService log)
     {
         _log = log;
     }
 
-    /// <summary>
-    /// Executes a prepared step and returns the result.
-    /// </summary>
     public async Task<StepResult> ExecuteStepAsync(PreparedStep preparedStep)
     {
         var step = preparedStep.OriginalStep;
@@ -27,7 +22,6 @@ public class ExecutionService
 
         try
         {
-            // If download failed earlier, skip execution
             if (preparedStep.ErrorMessage != null)
             {
                 result.Success = false;
@@ -62,9 +56,6 @@ public class ExecutionService
         return result;
     }
 
-    /// <summary>
-    /// Executes a .reg file silently using regedit.
-    /// </summary>
     private async Task<bool> ExecuteRegistryAsync(PreparedStep prepared)
     {
         var filePath = prepared.LocalFilePath ?? throw new InvalidOperationException("No local file path for reg step");
@@ -77,16 +68,15 @@ public class ExecutionService
                 Arguments = $"/s \"{filePath}\"",
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             }
         };
 
         return await RunProcessAsync(process);
     }
 
-    /// <summary>
-    /// Executes a PowerShell script with -ExecutionPolicy Bypass.
-    /// </summary>
     private async Task<bool> ExecutePowerShellAsync(PreparedStep prepared)
     {
         var filePath = prepared.LocalFilePath ?? throw new InvalidOperationException("No local file path for powershell step");
@@ -99,19 +89,17 @@ public class ExecutionService
                 Arguments = $"-ExecutionPolicy Bypass -NoProfile -NonInteractive -File \"{filePath}\"",
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             }
         };
 
         return await RunProcessAsync(process);
     }
 
-    /// <summary>
-    /// Executes a .cmd file or inline CMD commands.
-    /// </summary>
     private async Task<bool> ExecuteCmdAsync(OptimizationStep step, PreparedStep? prepared = null)
     {
-        // If a file is provided, run the .cmd file directly
         if (prepared?.LocalFilePath != null)
         {
             var process = new Process
@@ -122,13 +110,14 @@ public class ExecutionService
                     Arguments = $"/c \"{prepared.LocalFilePath}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 }
             };
             return await RunProcessAsync(process);
         }
 
-        // Otherwise run inline commands
         if (step.Commands == null || step.Commands.Count == 0)
         {
             _log.Warning($"Step '{step.Name}' has no commands to execute");
@@ -149,7 +138,9 @@ public class ExecutionService
                     Arguments = $"/c {command}",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 }
             };
 
@@ -164,9 +155,6 @@ public class ExecutionService
         return allSucceeded;
     }
 
-    /// <summary>
-    /// Runs an external executable with optional arguments.
-    /// </summary>
     private async Task<bool> ExecuteExeAsync(PreparedStep prepared)
     {
         var filePath = prepared.LocalFilePath ?? throw new InvalidOperationException("No local file path for exe step");
@@ -181,22 +169,54 @@ public class ExecutionService
                 Arguments = arguments,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             }
         };
 
         return await RunProcessAsync(process);
     }
 
-    /// <summary>
-    /// Starts a process, waits for it to exit, and returns whether it succeeded.
-    /// </summary>
     private async Task<bool> RunProcessAsync(Process process)
     {
+        var timeout = TimeSpan.FromMinutes(DefaultTimeoutMinutes);
+        var stdout = string.Empty;
+        var stderr = string.Empty;
+
         try
         {
             process.Start();
-            await process.WaitForExitAsync();
+
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            using var cts = new CancellationTokenSource(timeout);
+            try
+            {
+                await process.WaitForExitAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Warning($"Process timed out after {timeout.TotalMinutes} minutes: {process.StartInfo.FileName} {process.StartInfo.Arguments}");
+                try { process.Kill(entireProcessTree: true); } catch { }
+                return false;
+            }
+
+            stdout = await stdoutTask;
+            stderr = await stderrTask;
+
+            if (!string.IsNullOrWhiteSpace(stdout))
+            {
+                foreach (var line in stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    _log.Info($"  [output] {line.TrimEnd('\r')}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(stderr))
+            {
+                foreach (var line in stderr.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    _log.Warning($"  [stderr] {line.TrimEnd('\r')}");
+            }
 
             var success = process.ExitCode == 0;
             if (!success)

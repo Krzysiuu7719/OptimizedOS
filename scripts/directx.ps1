@@ -1,21 +1,38 @@
-# OptimizedOS - DirectX Installer
-# Downloads and installs DirectX End-User Runtime
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$dxUrl = "https://download.microsoft.com/download/1/B/C/1BCBDB93-35AB-4214-8EA1-E04089FC89FC/dxwebsetup.exe"
+$dxUrls = @(
+    "https://download.microsoft.com/download/1/B/C/1BCBDB93-35AB-4214-8EA1-E04089FC89FC/dxwebsetup.exe",
+    "https://download.microsoft.com/download/1/7/1/1718CCC4-6300-4E5E-B9DF-0A7CA28C11CA/dxwebsetup.exe"
+)
 $dxPath = "$env:TEMP\dxwebsetup.exe"
 
 Write-Host "Downloading DirectX End-User Runtime..."
-try {
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $wc = New-Object System.Net.WebClient
-    $wc.DownloadFile($dxUrl, $dxPath)
-} catch {
-    Write-Host "Failed to download DirectX: $_" -ForegroundColor Yellow
+$downloaded = $false
+
+foreach ($url in $dxUrls) {
+    try {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($url, $dxPath)
+        if (Test-Path $dxPath) {
+            $downloaded = $true
+            break
+        }
+    } catch {
+        Write-Host "  Failed from: $url"
+    }
+}
+
+if (-not $downloaded) {
+    Write-Host "Failed to download DirectX installer from all sources."
     exit 1
 }
 
 Write-Host "Installing DirectX (silent)..."
-Start-Process $dxPath "/Q" -Wait -NoNewWindow
+$proc = Start-Process $dxPath "/Q" -Wait -PassThru
+if ($proc.ExitCode -ne 0) {
+    Write-Host "DirectX installer exited with code: $($proc.ExitCode)"
+    exit $proc.ExitCode
+}
 
-Write-Host "DirectX installed."
+Write-Host "DirectX installed successfully."
 Remove-Item $dxPath -Force -ErrorAction SilentlyContinue

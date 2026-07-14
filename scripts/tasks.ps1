@@ -51,10 +51,12 @@ function main() {
 
     $scheduledTasks = schtasks /query /fo list
     $taskNames = [System.Collections.ArrayList]@()
+    $failedCount = 0
+    $successCount = 0
 
     foreach ($line in $scheduledTasks) {
         if ($line.contains("TaskName:")) {
-        ($taskNames.Add($line.Split(":")[1].Trim().ToLower())) 2>&1 > $null
+            ($taskNames.Add($line.Split(":")[1].Trim().ToLower())) 2>&1 > $null
         }
     }
 
@@ -62,17 +64,25 @@ function main() {
         Write-Host "Searching for $($wildcard)"
         foreach ($task in $taskNames) {
             if ($task.contains($wildcard)) {
-                if ((Toggle-Task -task $task -enable $false) -ne 0) {
-                    Write-Host "error: failed toggling one or more scheduled tasks"
-                    return 1
+                $result = Toggle-Task -task $task -enable $false
+                if ($result -eq 0) {
+                    $successCount++
+                } else {
+                    Write-Host "  Warning: could not disable: $task"
+                    $failedCount++
                 }
             }
         }
     }
 
+    Write-Host "Done: $successCount disabled, $failedCount failed"
+
+    if ($successCount -eq 0 -and $failedCount -gt 0) {
+        return 1
+    }
     return 0
 }
 
 $_exitCode = main
-Write-Host # new line
+Write-Host
 exit $_exitCode

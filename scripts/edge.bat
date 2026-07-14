@@ -48,7 +48,7 @@ if /i "%PROCESSOR_ARCHITECTURE%" equ "amd64" (
      "file_setup"^
      %bat_log%
 )
-if %errorlevel% neq 0 echo Cannot obtain "setup.exe" (%errorinfo%) & echo. & pause & exit /b %errorlevel%
+if %errorlevel% neq 0 echo Cannot obtain "setup.exe" (%errorinfo%) & echo. & exit /b %errorlevel%
 
 REM dll name should not be changed (see Both.bat for details)
 if /i "%PROCESSOR_ARCHITECTURE%" equ "amd64" (
@@ -66,7 +66,7 @@ if /i "%PROCESSOR_ARCHITECTURE%" equ "amd64" (
 	 "file_SQLite"^
 	 %bat_log%
 )
-if %errorlevel% neq 0 echo Cannot obtain "System.Data.SQLite.dll" (%errorinfo%) & echo. & pause & exit /b %errorlevel%
+if %errorlevel% neq 0 echo Cannot obtain "System.Data.SQLite.dll" (%errorinfo%) & echo. & exit /b %errorlevel%
 
 echo files obtained %bat_dbg%
 

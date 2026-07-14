@@ -10,3 +10,7 @@ publish/
 
 # Logs
 *.log
+
+# Large binaries (hosted as GitHub Release assets)
+files/*.exe
+files/VisualCRuntime/*.exe

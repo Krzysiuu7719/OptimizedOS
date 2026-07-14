@@ -109,7 +109,9 @@ public class GitHubService
                     }
                     else
                     {
-                        var fileUrl = $"{_sourceUrl}/{step.File}";
+                        var fileUrl = !string.IsNullOrEmpty(step.Url)
+                            ? step.Url
+                            : $"{_sourceUrl}/{step.File}";
                         _log.Info($"Downloading: {fileUrl}");
 
                         var response = await _http.GetAsync(fileUrl);

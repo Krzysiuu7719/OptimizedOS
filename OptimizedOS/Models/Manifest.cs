@@ -46,8 +46,11 @@ public class OptimizationStep
     [JsonPropertyName("commands")]
     public List<string>? Commands { get; set; }
 
-    [JsonPropertyName("arguments")]
+    [JsonPropertyName("args")]
     public string? Arguments { get; set; }
+
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 }
 
 /// <summary>

@@ -1,36 +1,31 @@
-# OptimizedOS - Dynamic svchost Stack Commit
-# Calculates MinimumStackCommitInBytes based on installed RAM
-# 8GB+ = 32KB (aggressive), 4GB = 64KB (balanced), <4GB = 128KB (safe)
+# OptimizedOS - Dynamic SvcHostSplitThreshold
+# Sets SvcHostSplitThresholdInKB based on installed RAM
+# More RAM = fewer svchost instances = lower overhead
 
-Write-Host "=== svchost Stack Commit (Dynamic) ===" -ForegroundColor Cyan
+Write-Host "=== SvcHostSplit Threshold (Dynamic) ===" -ForegroundColor Cyan
 
 $ramGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
 Write-Host "  Detected RAM: ${ramGB}GB" -ForegroundColor Gray
 
-if ($ramGB -ge 8) {
-    $commitBytes = 0x8000   # 32KB - aggressive
-    $label = "aggressive (32KB)"
+if ($ramGB -ge 16) {
+    $thresholdKB = 8192      # 8GB threshold — fewer splits, less overhead
+    $label = "8192KB (16GB+ RAM)"
+} elseif ($ramGB -ge 8) {
+    $thresholdKB = 4096      # 4GB threshold
+    $label = "4096KB (8GB RAM)"
 } elseif ($ramGB -ge 4) {
-    $commitBytes = 0x10000  # 64KB - balanced
-    $label = "balanced (64KB)"
+    $thresholdKB = 2048      # 2GB threshold
+    $label = "2048KB (4GB RAM)"
 } else {
-    $commitBytes = 0x30000  # 128KB - safe
-    $label = "safe (128KB)"
+    $thresholdKB = 1024      # 1GB threshold — more splits for low RAM
+    $label = "1024KB (<4GB RAM)"
 }
 
 Write-Host "  Using: $label" -ForegroundColor Gray
 
-$path = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\svchost.exe"
-$perfPath = "$path\PerfOptions"
-
+$path = "HKLM:\SYSTEM\ControlSet001\Control"
 try {
-    if (!(Test-Path $path)) { New-Item -Path $path -Force | Out-Null }
-    Set-ItemProperty -Path $path -Name "MinimumStackCommitInBytes" -Value $commitBytes -Type DWord -ErrorAction Stop
-
-    if (!(Test-Path $perfPath)) { New-Item -Path $perfPath -Force | Out-Null }
-    Set-ItemProperty -Path $perfPath -Name "CpuPriorityClass" -Value 1 -Type DWord -ErrorAction Stop
-    Set-ItemProperty -Path $perfPath -Name "IoPriority" -Value 0 -Type DWord -ErrorAction Stop
-
+    Set-ItemProperty -Path $path -Name "SvcHostSplitThresholdInKB" -Value $thresholdKB -Type DWord -ErrorAction Stop
     Write-Host "  Applied successfully" -ForegroundColor Green
 } catch {
     Write-Host "  Failed: $($_.Exception.Message)" -ForegroundColor Red

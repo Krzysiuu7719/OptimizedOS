@@ -3,9 +3,15 @@
   "steps": [
     {
       "name": "Registry Tweaks",
-      "description": "Bloatware, telemetry, privacy, performance, visual, gaming, O&O ShutUp10",
+      "description": "Performance, visual, gaming, O&O ShutUp10",
       "type": "reg",
       "file": "scripts/registry.reg"
+    },
+    {
+      "name": "svchost Stack (Dynamic)",
+      "description": "Calculate stack commit based on installed RAM",
+      "type": "powershell",
+      "file": "scripts/svchost.ps1"
     },
     {
       "name": "Disable Services",
@@ -20,14 +26,14 @@
       "file": "scripts/tasks.ps1"
     },
     {
-      "name": "Remove Bloatware",
-      "description": "Remove pre-installed Windows apps and OneDrive",
+      "name": "Remove Bloatware & Clean UI",
+      "description": "Remove pre-installed apps, Teams, Copilot, OneDrive, unpin taskbar & Start Menu",
       "type": "powershell",
       "file": "scripts/bloatware.ps1"
     },
     {
-      "name": "Privacy Tweaks",
-      "description": "Disable telemetry, tracking, Cortana, advertising",
+      "name": "Privacy & Defender",
+      "description": "Disable telemetry, tracking, Cortana, advertising, Windows Defender",
       "type": "powershell",
       "file": "scripts/privacy.ps1"
     },
@@ -39,13 +45,13 @@
     },
     {
       "name": "Custom Power Plan",
-      "description": "OptimizedOS Ultimate - Full custom power plan",
+      "description": "Import OptimizedOS Ultimate power plan (.pow)",
       "type": "cmd",
       "file": "scripts/power.cmd"
     },
     {
       "name": "Network Optimization",
-      "description": "TCP heuristics, RSS, Fast Open, timestamps, chimney",
+      "description": "TCP heuristics, RSS, Fast Open, Nagle, DNS",
       "type": "cmd",
       "file": "scripts/network.cmd"
     },

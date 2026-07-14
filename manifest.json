@@ -1,0 +1,108 @@
+{
+  "version": "1.0.0",
+  "steps": [
+    {
+      "name": "Registry Tweaks",
+      "description": "Bloatware, telemetry, privacy, performance, visual, gaming, O&O ShutUp10",
+      "type": "reg",
+      "file": "scripts/registry.reg"
+    },
+    {
+      "name": "Disable Services",
+      "description": "Disable unnecessary services via registry",
+      "type": "reg",
+      "file": "scripts/services.reg"
+    },
+    {
+      "name": "Disable Scheduled Tasks",
+      "description": "Disable bloatware scheduled tasks with TrustedInstaller",
+      "type": "powershell",
+      "file": "scripts/tasks.ps1"
+    },
+    {
+      "name": "Remove Bloatware",
+      "description": "Remove pre-installed Windows apps and OneDrive",
+      "type": "powershell",
+      "file": "scripts/bloatware.ps1"
+    },
+    {
+      "name": "Privacy Tweaks",
+      "description": "Disable telemetry, tracking, Cortana, advertising",
+      "type": "powershell",
+      "file": "scripts/privacy.ps1"
+    },
+    {
+      "name": "BCDEdit Tweaks",
+      "description": "Platform tick, dynamic tick, timer resolution, fsutil",
+      "type": "cmd",
+      "file": "scripts/bcdedit.cmd"
+    },
+    {
+      "name": "Custom Power Plan",
+      "description": "OptimizedOS Ultimate - Full custom power plan",
+      "type": "cmd",
+      "file": "scripts/power.cmd"
+    },
+    {
+      "name": "Network Optimization",
+      "description": "TCP heuristics, RSS, Fast Open, timestamps, chimney",
+      "type": "cmd",
+      "file": "scripts/network.cmd"
+    },
+    {
+      "name": "Disable USB Power Saving",
+      "description": "Turn off USB selective suspend on all devices",
+      "type": "cmd",
+      "file": "scripts/usb-power.cmd"
+    },
+    {
+      "name": "Disable Memory Compression",
+      "description": "Turn off memory compression agent",
+      "type": "cmd",
+      "file": "scripts/memcompress.cmd"
+    },
+    {
+      "name": "Disable Event Traces",
+      "description": "SleepStudy, Kernel-Processor-Power, UserModePowerService",
+      "type": "cmd",
+      "file": "scripts/eventtrace.cmd"
+    },
+    {
+      "name": "Disable Services (Rename)",
+      "description": "Rename Cortana, Search, TextInput executables",
+      "type": "cmd",
+      "file": "scripts/disable-services.cmd"
+    },
+    {
+      "name": "Remove Microsoft Edge",
+      "description": "Full Edge removal with registry cleanup",
+      "type": "cmd",
+      "file": "scripts/edge.bat"
+    },
+    {
+      "name": "O&O ShutUp10",
+      "description": "Privacy/debloat with O&O ShutUp10",
+      "type": "exe",
+      "file": "files/OOSU10.exe",
+      "args": "files/ooshutup10.cfg /quiet"
+    },
+    {
+      "name": "Visual C++ Runtimes",
+      "description": "Install all VC++ redistributables (2005-2022)",
+      "type": "cmd",
+      "file": "files/install_vcruntime.bat"
+    },
+    {
+      "name": "DirectX End-User Runtime",
+      "description": "Install DirectX June 2010 redistributable",
+      "type": "powershell",
+      "file": "scripts/directx.ps1"
+    },
+    {
+      "name": "Cleanup Temp Files",
+      "description": "Delete temp, Windows temp, prefetch",
+      "type": "cmd",
+      "file": "scripts/cleanup.cmd"
+    }
+  ]
+}

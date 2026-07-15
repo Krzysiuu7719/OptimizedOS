@@ -19,16 +19,10 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" /v TcpDelAckTi
 :: QoS reserved bandwidth - 0% (all available for apps)
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Psched" /v NonBestEffortLimit /t REG_DWORD /d 0 /f
 
-:: Disable power saving on NIC
-powershell -Command "Get-NetAdapter | ForEach-Object { Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Energy Efficient Ethernet' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Power Saving Mode' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue }"
+:: Disable power saving on NIC + Large Send Offload
+powershell -Command "Get-NetAdapter | ForEach-Object { Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Energy Efficient Ethernet' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Power Saving Mode' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Large Send Offload v2 (IPv4)' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Large Send Offload v2 (IPv6)' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue }"
 
-:: Disable Large Send Offload
-powershell -Command "Get-NetAdapter | ForEach-Object { Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Large Send Offload v2 (IPv4)' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue; Set-NetAdapterAdvancedProperty -Name $_.Name -DisplayName 'Large Send Offload v2 (IPv6)' -DisplayValue 'Disabled' -ErrorAction SilentlyContinue }"
-
-:: Set DNS to Cloudflare
-netsh interface ip set dnsservers "Wi-Fi" static 1.1.1.1 primary validate=no
-netsh interface ip set dnsservers "Wi-Fi" static 1.0.0.1 secondary validate=no
-netsh interface ip set dnsservers "Ethernet" static 1.1.1.1 primary validate=no
-netsh interface ip set dnsservers "Ethernet" static 1.0.0.1 secondary validate=no
+:: Set DNS to Cloudflare (only for active adapters)
+powershell -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | ForEach-Object { $n = $_.Name; Set-DnsClientServerAddress -InterfaceAlias $n -ServerAddresses ('1.1.1.1','1.0.0.1') -ErrorAction SilentlyContinue; Write-Host \"  DNS set for: $n\" }"
 
 echo Network optimization complete.

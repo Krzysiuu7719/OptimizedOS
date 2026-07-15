@@ -3,8 +3,15 @@ title OptimizedOS - Custom Power Plan
 
 echo Importing OptimizedOS Custom power plan...
 
+:: The .pow file is in files/ folder, script is in scripts/ folder
+set "POWFILE=%~dp0..\files\OptimizedOS.pow"
+if not exist "%POWFILE%" (
+    echo ERROR: OptimizedOS.pow not found at %POWFILE%
+    exit /b 1
+)
+
 :: Import and capture the GUID from output
-for /f "tokens=4" %%a in ('powercfg /import "%~dp0OptimizedOS.pow" ^| findstr /i "GUID"') do set "NEWGUID=%%a"
+for /f "tokens=4" %%a in ('powercfg /import "%POWFILE%" ^| findstr /i "GUID"') do set "NEWGUID=%%a"
 
 if "%NEWGUID%"=="" (
     echo ERROR: Failed to import power plan

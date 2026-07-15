@@ -29,10 +29,15 @@ if (-not $downloaded) {
 
 Write-Host "Installing DirectX (silent)..."
 $proc = Start-Process $dxPath "/Q" -Wait -PassThru
-if ($proc.ExitCode -ne 0) {
+# 3010 = reboot required (success), 0 = success
+if ($proc.ExitCode -ne 0 -and $proc.ExitCode -ne 3010) {
     Write-Host "DirectX installer exited with code: $($proc.ExitCode)"
     exit $proc.ExitCode
 }
 
-Write-Host "DirectX installed successfully."
+if ($proc.ExitCode -eq 3010) {
+    Write-Host "DirectX installed (reboot required)."
+} else {
+    Write-Host "DirectX installed successfully."
+}
 Remove-Item $dxPath -Force -ErrorAction SilentlyContinue

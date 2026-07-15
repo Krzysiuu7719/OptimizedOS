@@ -1,0 +1,48 @@
+Windows Registry Editor Version 5.00
+
+; ============================================================
+; DISABLE WINDOWS DEFENDER (not removed, just disabled)
+; ============================================================
+
+; --- Main Defender policies ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender]
+"DisableAntiSpyware"=dword:00000001
+"DisableRealtimeMonitoring"=dword:00000001
+"DisableBehaviorMonitoring"=dword:00000001
+"DisableOnAccessProtection"=dword:00000001
+"DisableIOAVProtection"=dword:00000001
+"DisableScanOnRealtimeEnable"=dword:00000001
+
+; --- Real-Time Protection ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection]
+"DisableRealtimeMonitoring"=dword:00000001
+"DisableBehaviorMonitoring"=dword:00000001
+"DisableOnAccessProtection"=dword:00000001
+"DisableIOAVProtection"=dword:00000001
+"DisableScriptScanning"=dword:00000001
+"SubmitSamplesConsent"=dword:00000002
+
+; --- Cloud protection / Spynet ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet]
+"DisableBehaviorMonitoring"=dword:00000001
+"SubmitSamplesConsent"=dword:00000002
+"SpyNetReporting"=dword:00000000
+
+; --- Scheduled scans ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Scan]
+"DisableRealtimeMonitoring"=dword:00000001
+"DisableScheduledScan"=dword:00000001
+"DisableRemovableDriveScanning"=dword:00000001
+"DisableEmailScanning"=dword:00000001
+
+; --- Cloud Filter ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Cloud Protection]
+"DisableBlockAtFirstSeen"=dword:00000001
+
+; --- Tamper Protection ---
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\TamperProtection]
+"DisableTamperProtection"=dword:00000001
+
+; --- Disable Security Health Service ---
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SecurityHealthService]
+"Start"=dword:00000004

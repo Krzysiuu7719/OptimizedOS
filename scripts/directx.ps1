@@ -1,8 +1,8 @@
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $dxUrls = @(
-    "https://download.microsoft.com/download/1/B/C/1BCBDB93-35AB-4214-8EA1-E04089FC89FC/dxwebsetup.exe",
-    "https://download.microsoft.com/download/1/7/1/1718CCC4-6300-4E5E-B9DF-0A7CA28C11CA/dxwebsetup.exe"
+    "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe",
+    "https://download.microsoft.com/download/1/B/C/1BCBDB93-35AB-4214-8EA1-E04089FC89FC/dxwebsetup.exe"
 )
 $dxPath = "$env:TEMP\dxwebsetup.exe"
 

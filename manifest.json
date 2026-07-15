@@ -32,8 +32,14 @@
       "file": "scripts/bloatware.ps1"
     },
     {
-      "name": "Privacy & Defender",
-      "description": "Disable telemetry, tracking, Cortana, advertising, Windows Defender",
+      "name": "Disable Defender",
+      "description": "Disable Windows Defender via registry policies",
+      "type": "reg",
+      "file": "scripts/defender.reg"
+    },
+    {
+      "name": "Privacy & Telemetry",
+      "description": "Disable telemetry, tracking, Cortana, advertising",
       "type": "powershell",
       "file": "scripts/privacy.ps1"
     },

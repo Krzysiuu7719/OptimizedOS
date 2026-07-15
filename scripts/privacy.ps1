@@ -1,7 +1,8 @@
-# OptimizedOS - Telemetry, Privacy & Defender
-# Disables Windows telemetry, tracking, Defender (not removed), and data collection
+# OptimizedOS - Telemetry, Privacy & Cortana
+# Disables Windows telemetry, tracking, Cortana, and data collection
+# Defender is disabled separately via defender.reg
 
-Write-Host "=== Privacy, Telemetry & Defender ===" -ForegroundColor Cyan
+Write-Host "=== Privacy & Telemetry ===" -ForegroundColor Cyan
 
 # --- Registry tweaks ---
 $regPaths = @(
@@ -73,64 +74,4 @@ New-Item -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Force | Out-Null
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Value 0 -Type DWord
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Siuf\Rules" -Name "PeriodInNanoSeconds" -Value 0 -Type DWord
 
-# ============================================================
-# DISABLE DEFENDER (not removed, just disabled)
-# ============================================================
-Write-Host "`n  Disabling Windows Defender..." -ForegroundColor Cyan
-
-# Disable via group policy registry
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableRealtimeMonitoring" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableBehaviorMonitoring" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableOnAccessProtection" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableIOAVProtection" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableScanOnRealtimeEnable" -Value 1 -Type DWord
-
-# Disable real-time monitoring
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableBehaviorMonitoring" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableOnAccessProtection" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableIOAVProtection" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableScriptScanning" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "SubmitSamplesConsent" -Value 2 -Type DWord
-
-# Disable cloud protection
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "DisableBehaviorMonitoring" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Value 2 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpyNetReporting" -Value 0 -Type DWord
-
-# Disable Defender scheduled scans
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableRealtimeMonitoring" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableScheduledScan" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableRemovableDriveScanning" -Value 1 -Type DWord
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" -Name "DisableEmailScanning" -Value 1 -Type DWord
-
-# Disable Cloud Filter
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Cloud Protection" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Cloud Protection" -Name "DisableBlockAtFirstSeen" -Value 1 -Type DWord
-
-# Disable AntiTamper protection
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\TamperProtection" -Force | Out-Null
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\TamperProtection" -Name "DisableTamperProtection" -Value 1 -Type DWord
-
-# Stop and disable WinDefend service
-$defenderSvc = Get-Service -Name "WinDefend" -ErrorAction SilentlyContinue
-if ($defenderSvc) {
-    Stop-Service -Name "WinDefend" -Force -ErrorAction SilentlyContinue
-    Set-Service -Name "WinDefend" -StartupType Disabled -ErrorAction SilentlyContinue
-    Write-Host "  WinDefend service disabled" -ForegroundColor Gray
-}
-
-# Disable SecurityHealth service
-$secHealthSvc = Get-Service -Name "SecurityHealthService" -ErrorAction SilentlyContinue
-if ($secHealthSvc) {
-    Stop-Service -Name "SecurityHealthService" -Force -ErrorAction SilentlyContinue
-    Set-Service -Name "SecurityHealthService" -StartupType Disabled -ErrorAction SilentlyContinue
-}
-
-Write-Host "  Windows Defender disabled" -ForegroundColor Green
-Write-Host "`nPrivacy & Defender hardening complete ($count registry + Defender)" -ForegroundColor Green
+Write-Host "Privacy & telemetry hardening complete ($count registry)" -ForegroundColor Green

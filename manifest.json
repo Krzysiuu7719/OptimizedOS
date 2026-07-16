@@ -51,9 +51,9 @@
     },
     {
       "name": "Custom Power Plan",
-      "description": "Import OptimizedOS Ultimate power plan (.pow)",
-      "type": "cmd",
-      "file": "scripts/power.cmd"
+      "description": "Download and import OptimizedOS Ultimate power plan",
+      "type": "powershell",
+      "file": "scripts/power.ps1"
     },
     {
       "name": "Network Optimization",
@@ -96,7 +96,7 @@
       "description": "Privacy/debloat with O&O ShutUp10",
       "type": "exe",
       "file": "files/OOSU10.exe",
-      "args": "files/ooshutup10.cfg /quiet",
+      "args": "/quiet",
       "url": "https://github.com/Krzysiuu7719/OptimizedOS/releases/download/v1.0.0/OOSU10.exe"
     },
     {

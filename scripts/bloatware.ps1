@@ -1,18 +1,50 @@
 # OptimizedOS - Bloatware Removal
-# Removes preinstalled Windows apps, Teams, Copilot, Remote Desktop, etc.
+# Removes preinstalled Windows apps, Teams, Copilot, Xbox, Widgets, etc.
 
 Write-Host "=== Bloatware Removal ===" -ForegroundColor Cyan
 
 $bloatware = @(
-    # AI / Copilot
+    # Copilot / AI
     "Microsoft.Copilot"
     "Microsoft.Windows.Ai.Copilot.Provider"
     "Microsoft.Copilot_8wekyb3d8bbwe"
     # Teams
     "MicrosoftTeams"
     "Microsoft.MicrosoftTeams"
+    "Microsoft.MicrosoftTeams_8wekyb3d8bbwe"
+    "Microsoft.StickyNotes"
+    # Camera
+    "Microsoft.WindowsCamera"
+    "Microsoft.WindowsCamera_8wekyb3d8bbwe"
+    # Dev Home
+    "Microsoft.WindowsTerminal" # Dev Home often pulls this
+    "Microsoft.DevHome"
+    "Microsoft.DevHome_8wekyb3d8bbwe"
+    # Family
+    "Microsoft.MicrosoftFamily"
+    "Microsoft.Family"
+    "MicrosoftCorporationII.QuickAssist"
+    # Game Bar / Game Speech / Game Window
+    "Microsoft.XboxGamingOverlay"
+    "Microsoft.Xbox.TCUI"
+    "Microsoft.XboxApp"
+    "Microsoft.XboxGameOverlay"
+    "Microsoft.XboxIdentityProvider"
+    "Microsoft.XboxSpeechToTextOverlay"
+    "Microsoft.Xbox.TCUI_8wekyb3d8bbwe"
+    # Xbox full suite
+    "Microsoft.XboxApp_8wekyb3d8bbwe"
+    "Microsoft.XboxGameOverlay_8wekyb3d8bbwe"
+    "Microsoft.XboxIdentityProvider_8wekyb3d8bbwe"
+    "Microsoft.XboxSpeechToTextOverlay_8wekyb3d8bbwe"
+    "Microsoft.XboxGamingOverlay_8wekyb3d8bbwe"
+    # Widgets
+    "Microsoft.WindowsWidgets"
+    "Microsoft.WindowsWidgets_8wekyb3d8bbwe"
+    "Microsoft.Widgets"
     # Communication
     "Microsoft.SkypeApp"
+    "Microsoft.SkypeApp_8wekyb3d8bbwe"
     "Microsoft.People"
     "Microsoft.WindowsCommunicationsApps"
     # Bing
@@ -21,6 +53,7 @@ $bloatware = @(
     "Microsoft.BingFinance"
     "Microsoft.BingSports"
     "Microsoft.BingSearch"
+    "Microsoft.Bing_8wekyb3d8bbwe"
     "Microsoft.549981C3F5F10"
     # Office / Productivity
     "Microsoft.MicrosoftOfficeHub"
@@ -28,6 +61,8 @@ $bloatware = @(
     "Microsoft.PowerAutomateDesktop"
     "Microsoft.Todos"
     "Microsoft.MicrosoftStickyNotes"
+    "Microsoft.OutlookForWindows"
+    "Microsoft.OutlookForWindows_8wekyb3d8bbwe"
     # Media
     "Microsoft.ZuneMusic"
     "Microsoft.ZuneVideo"
@@ -42,14 +77,18 @@ $bloatware = @(
     "Microsoft.WindowsFeedbackHub"
     "Microsoft.WindowsMaps"
     "Microsoft.PowerToys"
-    "Microsoft.WindowsTerminal"
-    "Microsoft.WindowsNotepad"
-    # Games
+    "Microsoft.Windows.Phonelink"
+    "Microsoft.Windows.Phonelink_8wekyb3d8bbwe"
+    "Microsoft.WindowsMobileStore"
+    "Microsoft.WindowsMobileStore_8wekyb3d8bbwe"
+    # Microsoft Store (keep if you want it, uncomment to remove)
+    # "Microsoft.WindowsStore"
+    # "Microsoft.WindowsStore_8wekyb3d8bbwe"
+    # Games / Third-party
     "king.com.CandyCrushSaga"
     "king.com.CandyCrushSodaSaga"
     "king.com.*"
     "Disney.*"
-    # Social / Third-party
     "SpotifyAB.SpotifyMusic"
     "BytedancePte.Ltd.TikTok"
     "Facebook.*"
@@ -123,17 +162,24 @@ try {
     if (Test-Path $taskbarKey) {
         Remove-ItemProperty -Path $taskbarKey -Name "Favorites" -Force -ErrorAction SilentlyContinue
         Remove-ItemProperty -Path $taskbarKey -Name "FavoritesResolve" -Force -ErrorAction SilentlyContinue
+        Set-ItemProperty -Path $taskbarKey -Name "Favorites" -Value ([byte[]](0)) -Force -ErrorAction SilentlyContinue
     }
-    # Clear pinned taskbar items via layout modification
-    $layoutPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-    Set-ItemProperty -Path $layoutPath -Name "ShowTaskViewButton" -Value 0 -Type DWord -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $layoutPath -Name "TaskbarMn" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Value 0 -Type DWord -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Value 0 -Type DWord -ErrorAction SilentlyContinue
     Write-Host "  Taskbar cleaned" -ForegroundColor Green
 } catch { }
 
 # Unpin everything from Start Menu
 Write-Host "`n  Cleaning Start Menu..." -ForegroundColor Gray
 try {
+    # Clear user pinned tiles
+    $startMenuKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current"
+    $tilePath = "$startMenuKey\default$windows.data.tilecollection.tilecollection"
+    if (Test-Path $tilePath) {
+        Remove-Item -Path $tilePath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    # Remove all user pinned items from Start Layout
     $startLayout = @"
 <?xml version="1.0" encoding="utf-8"?>
 <LayoutModificationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification">
@@ -151,11 +197,12 @@ try {
     Import-StartLayout -LayoutPath $layoutFile -MountPath "C:\" -ErrorAction SilentlyContinue
     Remove-Item $layoutFile -Force -ErrorAction SilentlyContinue
 
-    # Also clear user pinned tiles
-    $startMenuKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.tilecollection.tilecollection"
-    if (Test-Path $startMenuKey) {
-        Remove-Item -Path $startMenuKey -Recurse -Force -ErrorAction SilentlyContinue
+    # Also force clear via Registry CloudStore
+    $cloudStorePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default`$windows.data.start.tilecollection`$windows.data.start.tilecollection"
+    if (Test-Path $cloudStorePath) {
+        Remove-Item -Path $cloudStorePath -Recurse -Force -ErrorAction SilentlyContinue
     }
+
     Write-Host "  Start Menu cleaned" -ForegroundColor Green
 } catch {
     Write-Host "  Start Menu cleanup partial" -ForegroundColor Yellow
